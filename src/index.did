@@ -1,0 +1,7 @@
+service: () -> {
+    addAuthorizedUser: (principal) -> ();
+    addLog: (text, text, text) -> (variant {Ok:record {id:principal; organizationId:text; action:text; createdAt:nat64; user:principal; dataName:text}; Err:text});
+    getLogs: () -> (variant {Ok:vec record {id:principal; organizationId:text; action:text; createdAt:nat64; user:principal; dataName:text}; Err:text}) query;
+    getLogsByAction: (text) -> (variant {Ok:vec record {id:principal; organizationId:text; action:text; createdAt:nat64; user:principal; dataName:text}; Err:text}) query;
+    getUsersLogs: (principal) -> (variant {Ok:vec record {id:principal; organizationId:text; action:text; createdAt:nat64; user:principal; dataName:text}; Err:text}) query;
+}
