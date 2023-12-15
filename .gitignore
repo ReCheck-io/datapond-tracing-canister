@@ -1,6 +1,8 @@
 ### ICP ###
 .azle
 .dfx
+src/declarations
+
 
 ### Linux ###
 *~
