@@ -18,16 +18,18 @@ import {
 import { POSSIBLE_ACTIONS } from "./constants";
 import { generateId } from "./utils";
 
-const User = Record({
+const Service = Record({
   id: Principal,
   createdAt: nat64,
 });
 
-const LogRecord = Record({
+const Log = Record({
   id: Principal,
-  user: Principal,
+  serviceId: Principal,
+  userId: text,
   action: text,
-  metadata: text,
+  dataId: text,
+  dataName: text,
   createdAt: nat64,
 });
 
@@ -38,32 +40,36 @@ const Error = Variant({
   InvalidPayload: text,
 });
 
-const userStorage = StableBTreeMap(Principal, User, 0);
-const logStorage = StableBTreeMap(Principal, LogRecord, 1);
+const serviceStorage = StableBTreeMap(Principal, Service, 0);
+const logStorage = StableBTreeMap(Principal, Log, 1);
 
 export default Canister({
   /**
    * Initializes the canister by adding a new user during deployment.
    * @param userId - The Principal ID of the new user.
    */
-  initializeCanister: update([Principal], Result(User, Error), (userId) => {
-    if (!ic.caller().compareTo(ic.id())) {
-      return Err({ Unauthorized: "Unauthorized access!" });
-    }
+  initializeCanister: update(
+    [Principal],
+    Result(Service, Error),
+    (serviceId) => {
+      if (!ic.caller().compareTo(ic.id())) {
+        return Err({ Unauthorized: "Unauthorized access!" });
+      }
 
-    if (userStorage.containsKey(userId)) {
-      return Err({ Conflict: "User already exists!" });
-    }
+      if (serviceStorage.containsKey(serviceId)) {
+        return Err({ Conflict: "User already exists!" });
+      }
 
-    const newUser: typeof User = {
-      id: userId,
-      createdAt: ic.time(),
-    };
+      const newService: typeof Service = {
+        id: serviceId,
+        createdAt: ic.time(),
+      };
 
-    userStorage.insert(userId, newUser);
+      serviceStorage.insert(serviceId, newService);
 
-    return Ok(newUser);
-  }),
+      return Ok(newService);
+    },
+  ),
 
   /**
    * Adds a log entry with the provided details.
@@ -72,37 +78,43 @@ export default Canister({
    * @param organizationId - The ID of the organization.
    * @returns The log entry.
    */
-  addLog: update([text, text], Result(LogRecord, Error), (action, metadata) => {
-    if (!userStorage.containsKey(ic.caller())) {
-      return Err({ Unauthorized: "Unauthorized access!" });
-    }
+  addLog: update(
+    [text, text, text, text],
+    Result(Log, Error),
+    (userId, action, dataId, dataName) => {
+      if (!serviceStorage.containsKey(ic.caller())) {
+        return Err({ Unauthorized: "Unauthorized access!" });
+      }
 
-    // Check if the action is supported
-    if (!POSSIBLE_ACTIONS.includes(action.toLowerCase())) {
-      return Err({
-        InvalidPayload: `'${action}' is not supported, please select one of: ${POSSIBLE_ACTIONS}`,
-      });
-    }
+      // Check if the action is supported
+      if (!POSSIBLE_ACTIONS.includes(action.toLowerCase())) {
+        return Err({
+          InvalidPayload: `'${action}' is not supported, please select one of: ${POSSIBLE_ACTIONS}`,
+        });
+      }
 
-    const log: typeof LogRecord = {
-      id: generateId(),
-      user: ic.caller(),
-      metadata,
-      action: action.toLowerCase(),
-      createdAt: ic.time(),
-    };
+      const log: typeof Log = {
+        id: generateId(),
+        serviceId: ic.caller(),
+        userId,
+        dataId,
+        dataName,
+        action: action.toLowerCase(),
+        createdAt: ic.time(),
+      };
 
-    logStorage.insert(log.id, log);
+      logStorage.insert(log.id, log);
 
-    return Ok(log);
-  }),
+      return Ok(log);
+    },
+  ),
 
   /**
    * Retrieves all logs stored in the canister.
    * @returns A list of log entries.
    */
-  getLogs: query([], Result(Vec(LogRecord), Error), () => {
-    if (!userStorage.containsKey(ic.caller())) {
+  getLogs: query([], Result(Vec(Log), Error), () => {
+    if (!serviceStorage.containsKey(ic.caller())) {
       return Err({ Unauthorized: "Unauthorized access!" });
     }
 
@@ -114,8 +126,8 @@ export default Canister({
    * @param action - The action to filter logs by.
    * @returns A list of log entries matching the specified action.
    */
-  getLogsByAction: query([text], Result(Vec(LogRecord), Error), (action) => {
-    if (!userStorage.containsKey(ic.caller())) {
+  getLogsByAction: query([text], Result(Vec(Log), Error), (action) => {
+    if (!serviceStorage.containsKey(ic.caller())) {
       return Err({ Unauthorized: "Unauthorized access!" });
     }
 
@@ -129,19 +141,68 @@ export default Canister({
     const filteredLogs = logStorage
       .values()
       .filter(
-        (x: typeof LogRecord) =>
-          x.action.toLowerCase() === action.toLowerCase(),
+        (x: typeof Log) => x.action.toLowerCase() === action.toLowerCase(),
       );
 
     return Ok(filteredLogs);
   }),
 
   /**
+   * Verifies a document by finding every log with the given dataId.
+   * @param dataId - The ID of the data to verify.
+   * @returns A list of log entries for the specified dataId.
+   */
+  verifyDocument: query([text], Result(Vec(Log), Error), (dataId) => {
+    if (!serviceStorage.containsKey(ic.caller())) {
+      return Err({ Unauthorized: "Unauthorized access!" });
+    }
+
+    const logsForDataId = logStorage
+      .values()
+      .filter((x: typeof Log) => x.dataId === dataId);
+
+    return Ok(logsForDataId);
+  }),
+
+  /**
+   * Gets records by a given dataId and action.
+   * @param dataId - The ID of the data to filter by.
+   * @param action - The action to filter by.
+   * @returns A list of log entries matching the specified dataId and action.
+   */
+  getLogsByDataIdAndAction: query(
+    [text, text],
+    Result(Vec(Log), Error),
+    (dataId, action) => {
+      if (!serviceStorage.containsKey(ic.caller())) {
+        return Err({ Unauthorized: "Unauthorized access!" });
+      }
+
+      // Check if the provided action is supported
+      if (!POSSIBLE_ACTIONS.includes(action.toLowerCase())) {
+        return Err({
+          InvalidPayload: `'${action}' is not supported, please select one of: ${POSSIBLE_ACTIONS}`,
+        });
+      }
+
+      const filteredLogs = logStorage
+        .values()
+        .filter(
+          (x: typeof Log) =>
+            x.dataId === dataId &&
+            x.action.toLowerCase() === action.toLowerCase(),
+        );
+
+      return Ok(filteredLogs);
+    },
+  ),
+
+  /**
    * Generates an ID of type Principal using UUID.
    * @returns a Principal ID.
    */
   generateId: query([], Result(Principal, Error), () => {
-    if (!userStorage.containsKey(ic.caller())) {
+    if (!serviceStorage.containsKey(ic.caller())) {
       return Err({ Unauthorized: "Unauthorized access!" });
     }
 

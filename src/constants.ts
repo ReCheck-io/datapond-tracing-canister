@@ -1,8 +1,1 @@
-export const POSSIBLE_ACTIONS = [
-  "upload",
-  "shared",
-  "processed",
-  "completed",
-  "consumed",
-  "deleted",
-];
+export const POSSIBLE_ACTIONS = ["uploaded", "processed", "consumed"];
