@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "name": "datapond-tracing-logs",
   "description": "ICP canister for DataPond AI log records",
-  "author": "Byurhan Nurula",
+  "author": "ReCheck B.V. <info@recheck.io>",
   "license": "MIT",
   "scripts": {
   },
