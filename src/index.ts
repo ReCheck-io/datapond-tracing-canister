@@ -73,9 +73,10 @@ export default Canister({
 
   /**
    * Adds a log entry with the provided details.
+   * @param userId - The ID of the user performing the action.
    * @param action - The action performed.
+   * @param dataId - The ID of the data.
    * @param dataName - The name of the data.
-   * @param organizationId - The ID of the organization.
    * @returns The log entry.
    */
   addLog: update(
