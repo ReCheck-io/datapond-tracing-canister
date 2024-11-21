@@ -4,24 +4,112 @@
 
 ## Setup
 
-1. Install dfx using `DFX_VERSION=0.15.2 sh -ci "$(curl -fsSL https://sdk.dfinity.org/install.sh)"`
-2. Add it to your PATH variables using `echo 'export PATH="$PATH:$HOME/bin"' >> "$HOME/.bashrc"`
-3. Next, run `dfx start --background`
-4. Then run `dfx deploy datapond_tracing` to deploy the Canister. It will take a while
-5. Then run `dfx canister call datapond_tracing initializeCanister '(principal "<YOUR_PRINCIPLE_HERE>")'` to call the `initializeCanister` method to authorize back-end identity principle.
+1. Install DFINITY SDK using the following command:
+```bash
+  DFX_VERSION=0.22.0 sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+```
+
+2. Add DFINITY to your PATH variables by appending the following line to your `.bashrc`:
+```bash
+  echo 'export PATH="$PATH:$HOME/bin"' >> "$HOME/.bashrc"
+```
+
+3. Start the DFINITY local environment in the background:
+```bash
+  dfx start --background
+```
+
+4. Install project dependencies:
+```bash
+  npm install
+```
+
+4. Then run deploy command
+```bash
+dfx deploy points
+```
+
+5. Then call initialize canister method to authorize back-end identity principle.
+```bash
+dfx canister call points initializeCanister '(principal "<YOUR_PRINCIPLE_HERE>")'
+```
 
 ## Methods
 
-#### `initializeCanister` - Initializes the canister by adding a new user during deployment. Returns the created service entry or an error.
+#### `initializeCanister`
+- **Description:** Initializes the canister by registering a new service. Only the controller can call this method.  
+- **Parameters:**  
+  - `serviceId` (`Principal`) – The unique identifier for the service.  
+- **Returns:** The created service entry or an error.
 
-#### `addLog` - Adds a log entry with provided details. Returns the created log entry or an error.
+---
 
-#### `getLogs` - Retrieves all logs stored in the canister. Returns a list of log entries or an error.
+#### `addLog`
+- **Description:** Adds a new log entry for a user’s action on a specific data item. A unique hash is generated for each log entry.  
+- **Parameters:**  
+  - `action` (`Text`) – The action performed (e.g., "create," "update," "delete").  
+  - `dataId` (`Text`) – The identifier of the data item.  
+  - `dataName` (`Text`) – The name of the data item.  
+  - `userId` (`Text`) – The identifier of the user performing the action.  
+- **Returns:** The created log entry or an error.
 
-#### `getLogsByAction` - Retrieves logs filtered by a specific action. Returns a list of log entries or an error.
+---
 
-#### `verifyDocument` - Verifies a document by finding every log with the given dataId. Returns a list of log entries or an error.
+#### `getLogs`
+- **Description:** Retrieves all logs stored in the canister.  
+- **Returns:** A list of all log entries or an error.
 
-#### `getLogsByDataIdAndAction` - Gets records by a given dataId and action. Returns a list of log entries or an error.
+---
 
-#### `generateId` - Generates an ID of type Principal using UUID. Returns a Principal ID or an error.
+#### `getLogsByAction`
+- **Description:** Retrieves logs filtered by a specific action.  
+- **Parameters:** `action` (`Text`) – The action to filter logs by.  
+- **Returns:** A list of log entries matching the action or an error.
+
+---
+
+#### `getLogsByUser`
+- **Description:** Retrieves logs associated with a specific user.  
+- **Parameters:** `userId` (`Text`) – The identifier of the user.  
+- **Returns:** A list of log entries for the user or an error.
+
+---
+
+#### `getLogsByDataId`
+- **Description:** Retrieves logs related to a specific data item.  
+- **Parameters:** `dataId` (`Text`) – The identifier of the data item.  
+- **Returns:** A list of log entries for the data item or an error.
+
+---
+
+#### `getLogsByUserAndDataId`
+- **Description:** Retrieves logs for a specific user and data.  
+- **Parameters:**  
+  - `userId` (`Text`) – The identifier of the user.  
+  - `dataId` (`Text`) – The identifier of the data item.  
+- **Returns:** A list of log entries for the user and data item or an error.
+
+---
+
+#### `getLogsByDataIdAndAction`
+- **Description:** Retrieves logs filtered by both a specific data item and an action.  
+- **Parameters:**  
+  - `dataId` (`Text`) – The identifier of the data item.  
+  - `action` (`Text`) – The action to filter logs by.  
+- **Returns:** A list of log entries matching the data item and action or an error.
+
+---
+
+#### `verifyLog`
+- **Description:** Verifies the integrity of a log by comparing the computed hash of the input data against stored logs.  
+- **Parameters:**  
+  - `userId` (`Text`) – The identifier of the user.  
+  - `dataId` (`Text`) – The identifier of the data item.  
+  - `action` (`Text`) – The action performed.  
+- **Returns:** A boolean indicating whether the log is valid or an error.
+
+---
+
+#### `authorizeCaller` (Private)
+- **Description:** Ensures that the caller is authorized to perform actions on the canister.  
+- **Throws:** An `Unauthorized` error if the caller is not authorized.
