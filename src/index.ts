@@ -28,11 +28,11 @@ export default class TracingCanister {
   initializeCanister(serviceId: Principal): ServiceResult {
     try {
       if (!isController(caller())) {
-        return { Err: { Unauthorized: "Unauthorized access!" } };
+        throw { Unauthorized: "Unauthorized access!" };
       }
 
       if (this.serviceStorage.containsKey(serviceId)) {
-        return { Err: { Conflict: "User already exists!" } };
+        throw { Conflict: "User already exists!" };
       }
 
       const newService: Service = {

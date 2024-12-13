@@ -154,7 +154,7 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
-    'getLogsByUserAndFile' : IDL.Func(
+    'getLogsByUserAndDataId' : IDL.Func(
         [IDL.Text, IDL.Text],
         [
           IDL.Variant({

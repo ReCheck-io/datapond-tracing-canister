@@ -5,7 +5,7 @@ service: () -> {
     getLogsByDataId: (text) -> (variant {Ok:vec record {id:principal; action:text; dataId:text; userId:text; createdAt:nat64; compositeHash:text; dataName:text; serviceId:principal}; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}}) query;
     getLogsByDataIdAndAction: (text, text) -> (variant {Ok:vec record {id:principal; action:text; dataId:text; userId:text; createdAt:nat64; compositeHash:text; dataName:text; serviceId:principal}; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}}) query;
     getLogsByUser: (text) -> (variant {Ok:vec record {id:principal; action:text; dataId:text; userId:text; createdAt:nat64; compositeHash:text; dataName:text; serviceId:principal}; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}}) query;
-    getLogsByUserAndFile: (text, text) -> (variant {Ok:vec record {id:principal; action:text; dataId:text; userId:text; createdAt:nat64; compositeHash:text; dataName:text; serviceId:principal}; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}}) query;
+    getLogsByUserAndDataId: (text, text) -> (variant {Ok:vec record {id:principal; action:text; dataId:text; userId:text; createdAt:nat64; compositeHash:text; dataName:text; serviceId:principal}; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}}) query;
     initializeCanister: (principal) -> (variant {Ok:record {id:principal; createdAt:nat64}; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}});
     verifyLog: (text, text, text) -> (variant {Ok:bool; Err:variant {InvalidPayload:text; NotFound:text; Unauthorized:text; Conflict:text}}) query;
 }

@@ -139,7 +139,7 @@ export interface _SERVICE {
           { 'Conflict' : string }
       }
   >,
-  'getLogsByUserAndFile' : ActorMethod<
+  'getLogsByUserAndDataId' : ActorMethod<
     [string, string],
     {
         'Ok' : Array<

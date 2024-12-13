@@ -26,12 +26,12 @@
 
 4. Then run deploy command
 ```bash
-dfx deploy points
+dfx deploy tracing
 ```
 
 5. Then call initialize canister method to authorize back-end identity principle.
 ```bash
-dfx canister call points initializeCanister '(principal "<YOUR_PRINCIPLE_HERE>")'
+dfx canister call tracing initializeCanister '(principal "<YOUR_PRINCIPLE_HERE>")'
 ```
 
 ## Methods
